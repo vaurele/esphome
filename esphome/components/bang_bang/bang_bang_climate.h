@@ -29,6 +29,8 @@ class BangBangClimate : public climate::Climate, public Component {
   void set_supports_cool(bool supports_cool);
   Trigger<> *get_heat_trigger() const;
   void set_supports_heat(bool supports_heat);
+  Trigger<> *get_fan_only_trigger() const;
+  void set_supports_fan_only(bool supports_fan_only);
   void set_normal_config(const BangBangClimateTargetTempConfig &normal_config);
   void set_away_config(const BangBangClimateTargetTempConfig &away_config);
 
@@ -70,6 +72,12 @@ class BangBangClimate : public climate::Climate, public Component {
    */
   Trigger<> *heat_trigger_{nullptr};
   bool supports_heat_{false};
+  /** The trigger to call when the controller should switch to fan only mode.
+   *
+   * A null value for this attribute means that the controller has no fan only action
+   */
+  Trigger<> *fan_only_trigger_{nullptr};
+  bool supports_fan_only_{false};
   /** A reference to the trigger that was previously active.
    *
    * This is so that the previous trigger can be stopped before enabling a new one.

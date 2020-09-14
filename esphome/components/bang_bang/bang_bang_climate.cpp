@@ -44,6 +44,7 @@ climate::ClimateTraits BangBangClimate::traits() {
   traits.set_supports_auto_mode(true);
   traits.set_supports_cool_mode(this->supports_cool_);
   traits.set_supports_heat_mode(this->supports_heat_);
+  traits.set_supports_fan_only_mode(this->supports_fan_only_);
   traits.set_supports_two_point_target_temperature(true);
   traits.set_supports_away(this->supports_away_);
   traits.set_supports_action(true);
@@ -54,6 +55,7 @@ void BangBangClimate::compute_state_() {
     // in non-auto mode, switch directly to appropriate action
     //  - HEAT mode -> HEATING action
     //  - COOL mode -> COOLING action
+    //  - FAN_ONLY mode -> FAN_ONLY action
     //  - OFF mode -> OFF action (not IDLE!)
     this->switch_to_action_(static_cast<climate::ClimateAction>(this->mode));
     return;
@@ -123,6 +125,9 @@ void BangBangClimate::switch_to_action_(climate::ClimateAction action) {
     case climate::CLIMATE_ACTION_HEATING:
       trig = this->heat_trigger_;
       break;
+    case climate::CLIMATE_ACTION_FAN:
+      trig = this->fan_only_trigger_;
+      break;
     default:
       trig = nullptr;
   }
@@ -150,17 +155,20 @@ void BangBangClimate::set_away_config(const BangBangClimateTargetTempConfig &awa
   this->away_config_ = away_config;
 }
 BangBangClimate::BangBangClimate()
-    : idle_trigger_(new Trigger<>()), cool_trigger_(new Trigger<>()), heat_trigger_(new Trigger<>()) {}
+    : idle_trigger_(new Trigger<>()), cool_trigger_(new Trigger<>()), heat_trigger_(new Trigger<>()), fan_only_trigger_(new Trigger<>()) {}
 void BangBangClimate::set_sensor(sensor::Sensor *sensor) { this->sensor_ = sensor; }
 Trigger<> *BangBangClimate::get_idle_trigger() const { return this->idle_trigger_; }
 Trigger<> *BangBangClimate::get_cool_trigger() const { return this->cool_trigger_; }
 void BangBangClimate::set_supports_cool(bool supports_cool) { this->supports_cool_ = supports_cool; }
 Trigger<> *BangBangClimate::get_heat_trigger() const { return this->heat_trigger_; }
 void BangBangClimate::set_supports_heat(bool supports_heat) { this->supports_heat_ = supports_heat; }
+Trigger<> *BangBangClimate::get_fan_only_trigger() const { return this->fan_only_trigger_; }
+void BangBangClimate::set_supports_fan_only(bool supports_fan_only) { this->supports_fan_only_ = supports_fan_only_; }
 void BangBangClimate::dump_config() {
   LOG_CLIMATE("", "Bang Bang Climate", this);
   ESP_LOGCONFIG(TAG, "  Supports HEAT: %s", YESNO(this->supports_heat_));
   ESP_LOGCONFIG(TAG, "  Supports COOL: %s", YESNO(this->supports_cool_));
+  ESP_LOGCONFIG(TAG, "  Supports FAN_ONLY: %s", YESNO(this->supports_fan_only_));
   ESP_LOGCONFIG(TAG, "  Supports AWAY mode: %s", YESNO(this->supports_away_));
   ESP_LOGCONFIG(TAG, "  Default Target Temperature Low: %.1f°C", this->normal_config_.default_temperature_low);
   ESP_LOGCONFIG(TAG, "  Default Target Temperature High: %.1f°C", this->normal_config_.default_temperature_high);
